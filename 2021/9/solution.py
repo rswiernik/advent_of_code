@@ -1,14 +1,24 @@
 import sys
+from dataclasses import dataclass
 from typing import List
 
 
 Map = List[List[int]]
 
+@dataclass
+class Point:
+    x: int
+    y: int
+
+
 class Heightmap(object):
     def __init__(self, map: Map):
-        self.map = map
+        self._map = map
 
-    def _get_neighbors(self, row, col):
+    def get(self, point: Point) -> int:
+        return self._map[point.x][point.y]
+
+    def _get_neighbors(self, point: Point) -> List[Point]:
         neighbors = []
         for x, y in [
                 (-1, 0),
@@ -16,10 +26,14 @@ class Heightmap(object):
                 ( 0,-1),
                 ( 0, 1)]:
             try:
-                if any([i < 0 for i in [row+x, col+y]]):
-                    raise IndexError
+                if any([i < 0 for i in [point.x+x, point.y+y]]) or \
+                    any(i >= l for i, l in [
+                        (point.x+x, len(self._map)),
+                        (point.y+y, len(self._map[point.x]))
+                    ]):
+                        raise IndexError
                 neighbors.append(
-                    self.map[row+x][col+y]
+                    Point(x=point.x+x, y=point.y+y)
                 )
             except IndexError:
                 pass
@@ -28,14 +42,19 @@ class Heightmap(object):
 
     def find_low_points(self):
         low_points = []
-        for row in range(len(self.map)):
-            for col in range(len(self.map[row])):
-                item = self.map[row][col]
-                neighbors = self._get_neighbors(row, col)
-                comparison = [item < neighbor for neighbor in neighbors]
+        for row in range(len(self._map)):
+            for col in range(len(self._map[row])):
+                point = Point(row, col)
+                item = self.get(point)
+                neighbors = self._get_neighbors(point)
+                comparison = [item < self.get(neighbor) for neighbor in neighbors]
                 if all(comparison):
                     low_points.append(item)
         return low_points
+
+    def find_basin(self, point: Point) -> List[Point]:
+        self._get_neighbors(point)
+        pass
 
     def calculate_risk(self, low_points: List[int]) -> List[int]:
         return [x+1 for x in low_points]
