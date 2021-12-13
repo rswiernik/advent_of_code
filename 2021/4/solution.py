@@ -49,13 +49,18 @@ class BingoBoard(object):
                 return self._solved
         return self._solved
 
-    def play(self, number) -> None:
+    def play(self, number) -> bool:
+        """
+        returns true on a successful solve of the board
+        """
         row_pos = 0
         col_pos = 0
         for row in self.board:
             for col in row:
                 if col == number:
                     self.drawn[row_pos][col_pos] = True
+                    if self.is_solved():
+                        return True
                 col_pos += 1
             col_pos = 0
             row_pos += 1
@@ -80,6 +85,28 @@ def play_bingo(boards: List[BingoBoard], game_input: List[int]):
                 ))
                 return
 
+
+# Part 2
+def play_bingo_last_winner(boards: List[BingoBoard], game_input: List[int]):
+    print('Lets play Bingo!')
+    winner = None
+    winning_number = None
+    for number in game_input:
+        for board in boards:
+            if not board.is_solved() and board.play(number):
+                winner = board
+                winning_number = number
+
+    if not winner:
+        raise Exception('No winner found!')
+
+    total = winner.get_unmarked_total()
+    print('{} * {} = {}'.format(
+        total,
+        winning_number,
+        total * winning_number,
+    ))
+    return
 
 if __name__ == "__main__":
     in_file = sys.argv[1]
@@ -110,4 +137,6 @@ if __name__ == "__main__":
             boards.append(BingoBoard(board_id, board_input))
 
     # Part 1
-    play_bingo(boards, game_input)
+    # play_bingo(boards, game_input)
+    # Part 2
+    play_bingo_last_winner(boards, game_input)
