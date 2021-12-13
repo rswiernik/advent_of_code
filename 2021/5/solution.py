@@ -22,34 +22,33 @@ class Line:
         )
 
 
+    @staticmethod
+    def _next(a: Point, b: Point) -> Point:
+        directions = {
+            'x': 0,
+            'y': 0,
+        }
+        for axis in ['x', 'y']:
+            if getattr(a, axis) - getattr(b, axis) > 0:
+                directions[axis] = -1
+            elif getattr(a, axis) - getattr(b, axis) < 0:
+                directions[axis] = 1
+        new_point = Point(
+            x = a.x + directions['x'],
+            y = a.y + directions['y']
+        )
+        # print('{} -> {} | {}'.format(a,b,new_point))
+        return new_point
+
+
     def on_line(self) -> List[Point]:
-        def xy_range(a, b):
-            direction = -1 if a - b > 0 else 1
-            b += direction
-            print('{} -> {} | {}'.format(a,b,direction))
-            return range(a, b, direction)
-
         points = []
+        cursor = Point(self.start.x, self.start.y)
+        while cursor != self.end:
+            points.append(cursor)
+            cursor = self._next(cursor, self.end)
 
-        if self.start.x == self.end.x:
-            static = self.start.x
-            dynamic = (self.start.y, self.end.y)
-            func = lambda a,b: (a,b)
-        elif self.start.y == self.end.y:
-            static = self.start.y
-            dynamic = (self.start.x, self.end.x)
-            func = lambda a,b: (b,a)
-        else:
-            raise Exception('We cant do diagonals!')
-
-        for val in xy_range(dynamic[0], dynamic[1]):
-            row, col = func(val, static)
-            print("{},{}".format(row, col))
-            points.append(Point(row, col))
-
-        length = len(points)
-        diff = abs(dynamic[0]-dynamic[1])+1
-        assert length == diff, '{} != {}'.format(length, diff)
+        points.append(self.end)
         return points
 
 
@@ -70,18 +69,19 @@ class VentMap(object):
             [ 0 for _ in range(max_y+1)] for x in range(max_x+1)
         ]
 
-    def calculate_vents(self) -> int:
+    def calculate_vents(self, diagonals: bool) -> int:
         # Populate the map with line info
         poi = 0
         for line in self.lines:
-            if not (line.start.x == line.end.x or \
+            if not diagonals and \
+                    not (line.start.x == line.end.x or \
                     line.start.y == line.end.y):
                 continue
-            print('>>> {}'.format(line))
+            #print('>>> {}'.format(line))
 
             # Get points on the line
             points = line.on_line()
-            print(points)
+            #print(points)
 
             # Add them to the map
             for point in points:
@@ -89,9 +89,9 @@ class VentMap(object):
                 if self.map[point.x][point.y] == 2:
                     poi += 1
 
-        print('\n'.join(
-            [str([str(n) if n != 0 else '.' for n in x]) for x in self.map]
-        ))
+        #print('\n'.join(
+        #    [str([str(n) if n != 0 else '.' for n in x]) for x in self.map]
+        #))
         return poi
 
 
@@ -113,4 +113,7 @@ if __name__ == "__main__":
                     )
                 )
     vent_map = VentMap(input)
-    print(vent_map.calculate_vents())
+    print(vent_map.calculate_vents(diagonals=False))
+
+    vent_map = VentMap(input)
+    print(vent_map.calculate_vents(diagonals=True))
