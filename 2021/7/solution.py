@@ -1,19 +1,27 @@
 import sys
+import math
 from typing import Any, List, Optional
 from collections import defaultdict
 
 
 class CrabGang(object):
-    def __init__(self, positions):
+    def __init__(self, positions: List[int], linear: bool):
+        self.linear = linear
         self.positions = defaultdict(lambda: 0)
         for pos in positions:
             self.positions[pos] += 1
+
+    def cost(self, val):
+        if self.linear:
+            return val
+        else:
+            return math.floor(((val * val) + val)/2)
 
     def align(self):
         cost = defaultdict(lambda: 0)
         for dest in range(max(self.positions.keys())):
             for position, num_crabs in self.positions.items():
-                cost[dest] += abs(position-dest) * num_crabs
+                cost[dest] += self.cost(abs(position-dest)) * num_crabs
 
         return min(cost.values())
 
@@ -27,5 +35,9 @@ if __name__ == "__main__":
                 input.extend([int(x) for x in line.strip().split(',')])
 
     # Part 1
-    gang = CrabGang(input)
+    gang = CrabGang(input, linear=True)
+    print(gang.align())
+
+    # Part 2
+    gang = CrabGang(input, linear=False)
     print(gang.align())
