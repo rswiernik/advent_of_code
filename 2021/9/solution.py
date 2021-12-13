@@ -10,6 +10,16 @@ class Point:
     x: int
     y: int
 
+    def __eq__(self, other):
+        if self.x == other.x and \
+                self.y == other.y:
+            return True
+        else:
+            return False
+
+    def __hash__(self):
+        return hash((self.x, self.y))
+
 
 class Heightmap(object):
     def __init__(self, map: Map):
@@ -40,24 +50,31 @@ class Heightmap(object):
 
         return neighbors
 
-    def find_low_points(self):
+    def find_low_points(self) -> List[Point]:
         low_points = []
         for row in range(len(self._map)):
             for col in range(len(self._map[row])):
                 point = Point(row, col)
-                item = self.get(point)
+                height = self.get(point)
                 neighbors = self._get_neighbors(point)
-                comparison = [item < self.get(neighbor) for neighbor in neighbors]
+                comparison = [height < self.get(neighbor) for neighbor in neighbors]
                 if all(comparison):
-                    low_points.append(item)
+                    low_points.append(point)
         return low_points
 
     def find_basin(self, point: Point) -> List[Point]:
-        self._get_neighbors(point)
-        pass
+        basin = []
+        basin.append(point)
+        for neighbor in self._get_neighbors(point):
+            neighbor_height = self.get(neighbor)
+            if not neighbor_height == 9 and \
+                    self.get(point) < neighbor_height:
+                basin.extend(self.find_basin(neighbor))
+        return list(set(basin))
+
 
     def calculate_risk(self, low_points: List[int]) -> List[int]:
-        return [x+1 for x in low_points]
+        return [self.get(x)+1 for x in low_points]
 
 
 
@@ -73,10 +90,31 @@ if __name__ == "__main__":
                     row.append(int(x))
                 input.append(row)
 
+    # Part 1
     heightmap = Heightmap(input)
     low_points = heightmap.find_low_points()
     risk_levels = heightmap.calculate_risk(low_points)
     print(sum(risk_levels))
 
+
+    # Part 2
+    print('-----')
+    basins = []
+    for point in low_points:
+        basin = heightmap.find_basin(point)
+        print('length of basin: {}'.format(len(basin)))
+        basins.append(basin)
+
+    top_three = sorted(
+        [len(basin) for basin in basins]
+        , reverse=True
+    )[:3]
+
+    print(top_three)
+    total = 1
+    for length in top_three:
+        total = total * length
+
+    print(total)
 
 
