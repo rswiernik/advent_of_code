@@ -86,6 +86,16 @@ class OctopusMap(object):
                     if not neighbor.flashed:
                         self.check_flash(neighbor, chained=True)
 
+    def is_synced(self) -> bool:
+        observed = None
+        for row in self._map:
+            for octopus in row:
+                if not observed:
+                    observed = octopus.value
+                elif octopus.value != observed:
+                    return False
+        return True
+
 
 if __name__ == "__main__":
     in_file = sys.argv[1]
@@ -112,3 +122,22 @@ if __name__ == "__main__":
             print('--------------')
 
     print('Observed flashes: {}'.format(o_map.flashes))
+
+    # Part 2
+    o_map = OctopusMap(
+        [[Octopus(row, col, input[row][col]) for col in range(len(input[row]))]
+         for row in range(len(input))]
+    )
+
+    x = 0
+    while not o_map.is_synced():
+        x += 1
+        o_map.step()
+        if x % 10 == 0:
+            print('step: {}'.format(x))
+            print('\n'.join([''.join([str(n.value) for n in x]) for x in o_map._map]))
+            print('--------------')
+
+    print('\n'.join([''.join([str(n.value) for n in x]) for x in o_map._map]))
+    print('--------------')
+    print('Synchronized at step {}'.format(x))
