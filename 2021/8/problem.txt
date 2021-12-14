@@ -66,9 +66,6 @@ Because the digits 1, 4, 7, and 8 each use a unique number of segments, you shou
 
 In the output values, how many times do digits 1, 4, 7, or 8 appear?
 
-Your puzzle answer was 392.
-
-The first half of this puzzle is complete! It provides one gold star: *
 
 --- Part Two ---
 Through a little deduction, you should now be able to determine the remaining digits. Consider again the first example above:
