@@ -94,3 +94,9 @@ if __name__ == "__main__":
         print('Visible: {}'.format(t_map.get_visible()))
         break
 
+    # Part 2
+    t_map = ThermalMap(points)
+    for fold in folds:
+        t_map.fold(fold)
+    print('Visible: {}'.format(t_map.get_visible()))
+
