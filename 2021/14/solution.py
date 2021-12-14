@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import List
 
 
-def polymerize(input: List[str], steps: int):
+def polymerize(input: List[str], rules, steps: int):
     output = [x for x in input]
     for step in range(0, steps):
         next = []
@@ -27,6 +27,43 @@ def polymerize(input: List[str], steps: int):
     return output
 
 
+def do_the_math(intput):
+    items = defaultdict(lambda: 0)
+    for i in intput:
+        items[i] += 1
+    print(dict(items))
+    return max(items.values()) - min(items.values())
+
+
+def inplace_polymerizer(input: List[str], rules, steps: int):
+    input = [x for x in input]
+    print(input)
+    chains = defaultdict(lambda: 0)
+    for pos in range(0, len(input)):
+        if pos == len(input) - 1:
+            chains['{} '.format(input[pos])] += 1
+        else:
+            chains[''.join([input[pos],input[pos+1]])] += 1
+
+    for step in range(0, steps):
+        new_chains = defaultdict(lambda: 0)
+        for (key, tally) in chains.items():
+            rule = rules.get(key)
+            if rule:
+                new_chains['{}{}'.format(key[0],rule)] += tally
+                new_chains['{}{}'.format(rule,key[1])] += tally
+            elif key[1] == ' ':
+                new_chains[key] += tally
+        chains = new_chains
+
+    letter_count = defaultdict(lambda: 0)
+    for (key, val) in chains.items():
+        letter_count[key[0]] += val
+
+    print(dict(letter_count))
+    return max(letter_count.values()) - min(letter_count.values())
+
+
 if __name__ == "__main__":
     in_file = sys.argv[1]
 
@@ -43,29 +80,15 @@ if __name__ == "__main__":
 
     input = [x for x in input]
     print(input)
-    print(rules)
+    # print(rules)
     print('-----------------')
 
     # Part 1
-    # output = polymerize(input, 10)
-
-    # Part 2
-    output = polymerize(input, 40)
+    output = polymerize(input, rules, 10)
     print(len(output))
-
-    items = defaultdict(lambda: 0)
-    for i in output:
-        items[i] += 1
-
-    max = None
-    min = None
-    for item, n in items.items():
-        if not max or n > max:
-            max = n
-        elif not min or n < min:
-            min = n
-
-    print(max-min)
+    print(do_the_math(output))
 
 
-
+    print('-----------------')
+    # print(new_rules)
+    print(inplace_polymerizer(input, rules,  40))
