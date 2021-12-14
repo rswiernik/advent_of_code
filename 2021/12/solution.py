@@ -1,6 +1,6 @@
 import sys
 from dataclasses import dataclass
-from typing import List, Set
+from typing import Dict, List, Set
 
 
 class Room(object):
@@ -19,21 +19,31 @@ class Room(object):
         return self.name.lower() == self.name
 
     def __repr__(self):
-        return 'Room("{}" -> {})'.format(
+        return 'Room("{}")'.format(
             self.name,
-            [x.name for x in self.neighbors]
         )
 
+def twice_once(visited: Dict[Room, int]) -> bool:
+    twice_once = False
+    for (room, visits) in visited.items():
+        if room.is_small() and visits == 2:
+            if not twice_once:
+                twice_once = True
+            else:
+                return twice_once
+    return twice_once
 
-def crawl(room: Room, path: List[Room], visited: Set[Room]) -> List[List[Room]]:
+
+def crawl(room: Room, path: List[Room], visited: Dict[Room, int]) -> List[List[Room]]:
     print(room)
     print(path)
     print(visited)
     print('------')
-    v = []
-    v.extend(visited)
-    if room.is_small():
-        v.append(room)
+    v = {}
+    v.update(visited)
+    num = v.get(room, 0)
+    v[room] = num
+    v[room] += 1
 
     p = []
     p.extend(path)
@@ -45,7 +55,10 @@ def crawl(room: Room, path: List[Room], visited: Set[Room]) -> List[List[Room]]:
 
     neighbor_paths = []
     for neighbor in room.neighbors:
-        if neighbor in v:
+        num = v.get(neighbor, 0)
+        if (neighbor.name == 'start' and num >= 1):
+            continue
+        elif(neighbor.is_small() and (num >=1 and twice_once(v))):
             continue
         neighbor_paths.extend(
             crawl(
@@ -56,8 +69,6 @@ def crawl(room: Room, path: List[Room], visited: Set[Room]) -> List[List[Room]]:
         )
 
     return neighbor_paths
-
-
 
 
 if __name__ == "__main__":
@@ -85,11 +96,6 @@ if __name__ == "__main__":
                 a.add_neighbor(b)
                 b.add_neighbor(a)
 
-    # print(room_by_name)
-
-    paths = crawl(room_by_name['start'], [], [])
+    paths = crawl(room_by_name['start'], [], {})
     print('\n'.join([str([i.name for i in x]) for x in paths]))
     print(len(paths))
-
-
-
